@@ -1,0 +1,18 @@
+Weather:Sunny
+    Parents:Yes
+        Cinema
+    Parents:No
+        Tennis
+Weather:Windy
+    Parents:Yes
+        Cinema
+    Parents:No
+        Money:Poor
+            Cinema
+        Money:Rich
+            Shopping
+Weather:Rainy
+    Parents:Yes
+        Cinema
+    Parents:No
+        Stay in

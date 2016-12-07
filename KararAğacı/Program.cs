@@ -61,12 +61,13 @@ namespace KararAğacı
     class Program
     {
 
+
         public const char sep = ';';
         static void Main(string[] args)
         {
             
             string[] file = File.ReadAllLines("C:\\Users\\Muhammed Yılmaz\\Documents\\Visual Studio 2015\\Projects\\KararAğacı\\Örnek.csv");
-
+            /*
             List<GAIN> GainList = Gain(file, "Decision");
 
             GAIN Enbüyük = GAIN.EnBüyük(GainList);
@@ -78,10 +79,84 @@ namespace KararAğacı
                     Console.WriteLine(K.isim + " " + K.değer);
                 }
             }
+            */
 
+            Ağaç ağaç = new Ağaç();
+            AğaçDoldur(ağaç, file, "Decision");
+            Ağaçyaz(ağaç);
+            AğaçDosyayayaz(ağaç);
             Console.ReadLine();
         }
 
+        public static void AğaçDoldur(Ağaç ağaç,string[] dizi, string cevapSütun,string boşluk="")
+        {
+            string[] sonuçlar = new string[dizi.Length - 1];
+            int konum = Array.IndexOf(dizi[0].Split(sep), cevapSütun);
+
+            for (int i = 0; i < dizi.Length - 1; i++)
+            {
+                sonuçlar[i] = dizi[i + 1].Split(sep)[konum];
+            }
+            double EntropiG = Entropi(sonuçlar);
+
+            if(EntropiG == 0)
+            {
+                ağaç.sınıf = dizi[1].Split(sep)[konum];
+            }
+            else
+            {
+                List<GAIN> GainList = Gain(dizi, cevapSütun);
+                GAIN Enbüyük = GAIN.EnBüyük(GainList);
+                ağaç.isim = Enbüyük.isim;    //sütun ismi
+                //Console.WriteLine(boşluk+Enbüyük.isim);
+
+                
+                foreach (var dal in Enbüyük.histo)
+                {
+                    //Console.WriteLine(boşluk+Enbüyük.isim+":"+dal.isim+":"+dal.sayı);
+                    Ağaç AltAğaç = new Ağaç();
+                    AltAğaç.değer = dal.isim;
+                    string[] altdizi = altDizi(dizi, dal, Enbüyük.isim);
+                    /*foreach (var item in altdizi)
+                    {
+                        Console.WriteLine(boşluk+item);
+                    }
+                    */
+                    ağaç.AltListe.Add(AltAğaç);
+                    AğaçDoldur(AltAğaç,altdizi,cevapSütun,"    ");
+                }
+            }
+        }
+        public static void Ağaçyaz(Ağaç ağaç,string boşluk="")
+        {
+            if(ağaç.AltListe.Count != 0)
+            {
+                foreach (var item in ağaç.AltListe)
+                {
+                    Console.WriteLine(boşluk+ağaç.isim+":"+item.değer);
+                    Ağaçyaz(item,boşluk+"    ");
+                }
+            }
+            else
+            {
+                Console.WriteLine(boşluk+ağaç.sınıf);
+            }
+        }
+        public static void AğaçDosyayayaz(Ağaç ağaç,string file="ağaçdosyasi.txt", string boşluk = "")
+        {
+            if (ağaç.AltListe.Count != 0)
+            {
+                foreach (var item in ağaç.AltListe)
+                {
+                    File.AppendAllText( file,(boşluk + ağaç.isim + ":" + item.değer)+"\r\n");
+                    AğaçDosyayayaz(item,file, boşluk + "    ");
+                }
+            }
+            else
+            {
+                File.AppendAllText(file,(boşluk + ağaç.sınıf+"\r\n"));
+            }
+        }
         public static List<GAIN> Gain(string[] dizi,string cevapSütun)
         {
 
