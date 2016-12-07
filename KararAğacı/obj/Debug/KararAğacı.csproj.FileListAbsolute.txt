@@ -1,0 +1,6 @@
+c:\users\muhammed yılmaz\documents\visual studio 2015\Projects\KararAğacı\KararAğacı\bin\Debug\KararAğacı.exe.config
+c:\users\muhammed yılmaz\documents\visual studio 2015\Projects\KararAğacı\KararAğacı\bin\Debug\KararAğacı.exe
+c:\users\muhammed yılmaz\documents\visual studio 2015\Projects\KararAğacı\KararAğacı\bin\Debug\KararAğacı.pdb
+c:\users\muhammed yılmaz\documents\visual studio 2015\Projects\KararAğacı\KararAğacı\obj\Debug\KararAğacı.csprojResolveAssemblyReference.cache
+c:\users\muhammed yılmaz\documents\visual studio 2015\Projects\KararAğacı\KararAğacı\obj\Debug\KararAğacı.exe
+c:\users\muhammed yılmaz\documents\visual studio 2015\Projects\KararAğacı\KararAğacı\obj\Debug\KararAğacı.pdb
