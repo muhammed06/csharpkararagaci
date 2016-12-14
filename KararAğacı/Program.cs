@@ -66,27 +66,139 @@ namespace KararAğacı
         static void Main(string[] args)
         {
             
-            string[] file = File.ReadAllLines("C:\\Users\\Muhammed Yılmaz\\Documents\\Visual Studio 2015\\Projects\\KararAğacı\\Örnek.csv");
-            /*
-            List<GAIN> GainList = Gain(file, "Decision");
+            string[] file = File.ReadAllLines("C:\\Users\\Muhammed Yılmaz\\Documents\\Visual Studio 2015\\Projects\\KararAğacı\\bank-full.csv");
 
-            GAIN Enbüyük = GAIN.EnBüyük(GainList);
-            foreach (var i in Enbüyük.histo)
-            {
-                string[] altdizi = altDizi(file, i, Enbüyük.isim);
-                foreach(var K in Gain(altdizi, "Decision"))
-                {
-                    Console.WriteLine(K.isim + " " + K.değer);
-                }
-            }
-            */
 
             Ağaç ağaç = new Ağaç();
-            AğaçDoldur(ağaç, file, "Decision");
+            DizidenSayıÇıkar(file, "\"y\""); 
+            AğaçDoldur(ağaç, file, "\"y\"");
+            ağacıBuda(ağaç);
             Ağaçyaz(ağaç);
-            AğaçDosyayayaz(ağaç);
+            string dosyaya=AğaçDosyayayaz(ağaç);
+            File.WriteAllText("ağaçdosyasi.txt",dosyaya);
             Console.ReadLine();
         }
+
+        public static string ağacıBuda(Ağaç ağaç)
+        {
+            if (ağaç.AltListe.Count == 0)
+            {
+                return ağaç.sınıf;
+            }
+            else
+            {
+                string sınıfdeğeri = "";
+                bool budayımmı = true;
+                foreach (var item in ağaç.AltListe)
+                {
+                    string değer = ağacıBuda(item);
+
+                    if (değer == "") budayımmı=false;
+
+                    if (sınıfdeğeri == "")
+                    {
+                        sınıfdeğeri = değer;
+                    }
+                    else
+                    {
+                        if (sınıfdeğeri != değer)
+                        {
+                            budayımmı = false;
+                        }
+                    }
+                }
+                if (budayımmı)
+                {
+                    ağaç.sınıf = sınıfdeğeri;
+                    ağaç.AltListe = new List<Ağaç>();
+                    return sınıfdeğeri;
+                }
+                
+            }
+            return "";
+        }
+
+        public static string yerinekoy(string eski,string yeni,int konum)
+        {
+            string giden = "";
+            string[] eskidizi = eski.Split(sep);
+            for (int i = 0; i < eskidizi.Length; i++)
+            {
+                if (i != konum)
+                {
+                    giden += eskidizi[i];
+                    if (i != eskidizi.Length -1)
+                    {
+                        giden += sep;
+                    }
+                }
+                else
+                {
+                    giden += yeni;
+                    if (i != eskidizi.Length - 1)
+                    {
+                        giden += sep;
+                    }
+                }
+            }
+            return giden;
+        }
+        public static string sepsizyerinekoy(string eski, string yeni, int konum)
+        {
+            string giden = "";
+            string[] eskidizi = eski.Split(sep);
+            for (int i = 0; i < eskidizi.Length; i++)
+            {
+                if (i != konum)
+                {
+                    giden += eskidizi[i];
+                    if (i != eskidizi.Length - 1)
+                    {
+                        giden += sep;
+                    }
+                }
+                else
+                {
+                    giden += yeni;
+                }
+            }
+            return giden;
+        }
+        public static void DizidenSayıÇıkar(string[] dizi,string cevapSütun)
+        {
+            List<SayıSütunlar> SütunList = new List<SayıSütunlar>();
+            string[] DizidenBul = dizi[1].Split(sep);
+            int Cevapkonum = Array.IndexOf(dizi[0].Split(sep), cevapSütun);
+            for (int i = 0; i < DizidenBul.Length && i != Cevapkonum; i++)
+            {
+                double değer = 0.0;
+                if (double.TryParse(DizidenBul[i], out değer))
+                {
+                    SütunList.Add(new SayıSütunlar( dizi[0].Split(sep)[i] , i));
+                }
+            }
+
+            foreach (var item in SütunList)
+            {
+                for (int i = 1; i < dizi.Length ; i++)
+                {
+                    double değer = double.Parse(dizi[i].Split(sep)[item.konum]);
+                    item.DiziyeEkle(dizi[i].Split(sep)[Cevapkonum], değer);
+                }
+            }
+
+            foreach (var item in SütunList)
+            {
+                dizi[0] = yerinekoy(dizi[0], dizi[0].Split(sep)[item.konum]+item.başlık(),item.konum);
+                for (int i = 1; i < dizi.Length; i++)
+                {
+                    double değer = double.Parse(dizi[i].Split(sep)[item.konum]);
+                    string sınıfı=item.enYakın(değer);
+                    dizi[i] = yerinekoy(dizi[i], sınıfı, item.konum);
+                }
+            }
+        }
+
 
         public static void AğaçDoldur(Ağaç ağaç,string[] dizi, string cevapSütun,string boşluk="")
         {
@@ -99,7 +211,7 @@ namespace KararAğacı
             }
             double EntropiG = Entropi(sonuçlar);
 
-            if(EntropiG == 0)
+            if(EntropiG == 0)//|| EntropiG < 0.1
             {
                 ağaç.sınıf = dizi[1].Split(sep)[konum];
             }
@@ -109,7 +221,11 @@ namespace KararAğacı
                 GAIN Enbüyük = GAIN.EnBüyük(GainList);
                 ağaç.isim = Enbüyük.isim;    //sütun ismi
                 //Console.WriteLine(boşluk+Enbüyük.isim);
-
+                if (Enbüyük.histo.Count==1)
+                {
+                    ağaç.sınıf = dizi[1].Split(sep)[konum];
+                    return;
+                }
                 
                 foreach (var dal in Enbüyük.histo)
                 {
@@ -142,20 +258,24 @@ namespace KararAğacı
                 Console.WriteLine(boşluk+ağaç.sınıf);
             }
         }
-        public static void AğaçDosyayayaz(Ağaç ağaç,string file="ağaçdosyasi.txt", string boşluk = "")
+        public static string AğaçDosyayayaz(Ağaç ağaç, string boşluk = "")
         {
+            string ağaçstr = "";
             if (ağaç.AltListe.Count != 0)
             {
                 foreach (var item in ağaç.AltListe)
                 {
-                    File.AppendAllText( file,(boşluk + ağaç.isim + ":" + item.değer)+"\r\n");
-                    AğaçDosyayayaz(item,file, boşluk + "    ");
+                    ağaçstr+=((boşluk + ağaç.isim + ":" + item.değer) + "\r\n");
+                    //File.AppendAllText( file,(boşluk + ağaç.isim + ":" + item.değer)+"\r\n");
+                    ağaçstr += AğaçDosyayayaz(item, boşluk + "    ");
                 }
             }
             else
             {
-                File.AppendAllText(file,(boşluk + ağaç.sınıf+"\r\n"));
+                ağaçstr+=((boşluk + ağaç.sınıf + "\r\n"));
+                //File.AppendAllText(file,(boşluk + ağaç.sınıf+"\r\n"));
             }
+            return ağaçstr;
         }
         public static List<GAIN> Gain(string[] dizi,string cevapSütun)
         {
@@ -235,13 +355,16 @@ namespace KararAğacı
             string[] sütunlar = new string[histo.sayı+1];
 
             int konum = Array.IndexOf(dizi[0].Split(sep), sütunisim);
-            sütunlar[0] = dizi[0].Replace(dizi[0].Split(sep)[konum] + sep, "").Replace(sep + dizi[0].Split(sep)[konum], "");
+            sütunlar[0] = sepsizyerinekoy(dizi[0], "", konum);
+
+            //sütunlar[0] = dizi[0].Replace(dizi[0].Split(sep)[konum] + sep, "").Replace(sep + dizi[0].Split(sep)[konum], "");
             int count = 1;
             for (int i = 0; i < dizi.Length; i++)
             {
                 if (dizi[i].Split(sep)[konum] == histo.isim)
                 {
-                    sütunlar[count] = dizi[i].Replace(dizi[i].Split(sep)[konum]+sep, "").Replace(sep+dizi[i].Split(sep)[konum], "");
+                    sütunlar[count] = sepsizyerinekoy(dizi[i],"",konum);
+                    //sütunlar[count] = dizi[i].Replace(dizi[i].Split(sep)[konum]+sep, "").Replace(sep+dizi[i].Split(sep)[konum], "");
                     count += 1;
                 }
 
