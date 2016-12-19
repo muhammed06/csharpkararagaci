@@ -65,20 +65,115 @@ namespace KararAğacı
         public const char sep = ';';
         static void Main(string[] args)
         {
-            
-            string[] file = File.ReadAllLines("C:\\Users\\Muhammed Yılmaz\\Documents\\Visual Studio 2015\\Projects\\KararAğacı\\bank-full.csv");
 
+            string[] file = File.ReadAllLines("C:\\Users\\Muhammed Yılmaz\\Documents\\Visual Studio 2015\\Projects\\KararAğacı\\bank-full.csv");
+            string[] test = File.ReadAllLines("C:\\Users\\Muhammed Yılmaz\\Documents\\Visual Studio 2015\\Projects\\KararAğacı\\bank-full.csv");
 
             Ağaç ağaç = new Ağaç();
-            DizidenSayıÇıkar(file, "\"y\""); 
+            DizidenSayıÇıkar(file, "\"y\"");
             AğaçDoldur(ağaç, file, "\"y\"");
             ağacıBuda(ağaç);
-            Ağaçyaz(ağaç);
-            string dosyaya=AğaçDosyayayaz(ağaç);
-            File.WriteAllText("ağaçdosyasi.txt",dosyaya);
+
+            string dosyaya = AğaçDosyayayaz(ağaç);
+            //Console.WriteLine(dosyaya);
+            Console.WriteLine(tümünükarşılaştır(ağaç,test,"\"y\""));
+            File.WriteAllText("ağaçdosyasi.txt", dosyaya);
             Console.ReadLine();
         }
 
+        public static string tümünükarşılaştır(Ağaç ağaç,string[] dizi,string cevapsütun)
+        {
+            int doğru = 0;
+            int yanlış = 0;
+            for (int i=1; i< dizi.Length;i++)
+            {
+                string item = dizi[i];
+                if (karşılaştır(ağaç,item,dizi[0],cevapsütun))
+                {
+                    doğru+=1;
+                }
+                else
+                {
+                    yanlış += 1;
+                }
+            }
+            return "Doğru Sayısı= "+doğru.ToString()+" , Yanlış Sayısı= "+yanlış.ToString()+" , Başarı= % "+((double)doğru/ (doğru + yanlış))*100;
+        }
+
+        public static bool karşılaştır(Ağaç ağaç, string veri,string başlık,string cevapsütun)
+        {
+            string sütunisim;
+            string[] değerler;
+            bool sayımı = (ağaç.isim.Split('(')).Length > 1;
+            if (sayımı)
+                sütunisim = ağaç.isim.Split('(')[0];
+            else
+                sütunisim = ağaç.isim;
+            int konum = Array.IndexOf(başlık.Split(sep), sütunisim);
+            int cevapkonum = Array.IndexOf(başlık.Split(sep), cevapsütun);
+            //List<Histogram> histoList = new List<Histogram>();
+            if (sayımı)
+            {
+                değerler = ağaç.isim.Split('(')[1].Split(')')[0].Split('-');
+                double fark = Math.Abs( double.Parse(değerler[0].Split(':')[1]) - double.Parse(veri.Split(sep)[konum]) );
+                string sonuc = değerler[0].Split(':')[0];
+                foreach (var item in değerler)
+                {
+                    double arafark = Math.Abs(double.Parse(item.Split(':')[1]) - double.Parse(veri.Split(sep)[konum]));
+                    if (arafark < fark)
+                    {
+                        fark = arafark;
+                        sonuc = item.Split(':')[0];
+                    }
+                }
+                if (ağaç.AltListe.Count > 0)
+                {
+                    foreach (var item in ağaç.AltListe)
+                    {
+                        if (item.değer == sonuc)
+                        {
+                            return karşılaştır(item, veri,başlık, cevapsütun);
+                        }
+                    }
+                }
+                else
+                {
+                    if(ağaç.sınıf == veri.Split(sep)[cevapkonum])
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                if (ağaç.AltListe.Count > 0)
+                {
+                    foreach (var item in ağaç.AltListe)
+                    {
+                        if (item.değer == veri.Split(sep)[konum])
+                        {
+                            return karşılaştır(item, veri,başlık, cevapsütun);
+                        }
+                    }
+                }
+                else
+                {
+                    if (ağaç.sınıf == veri.Split(sep)[cevapkonum])
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
         public static string ağacıBuda(Ağaç ağaç)
         {
             if (ağaç.AltListe.Count == 0)
@@ -229,15 +324,9 @@ namespace KararAğacı
                 
                 foreach (var dal in Enbüyük.histo)
                 {
-                    //Console.WriteLine(boşluk+Enbüyük.isim+":"+dal.isim+":"+dal.sayı);
                     Ağaç AltAğaç = new Ağaç();
                     AltAğaç.değer = dal.isim;
                     string[] altdizi = altDizi(dizi, dal, Enbüyük.isim);
-                    /*foreach (var item in altdizi)
-                    {
-                        Console.WriteLine(boşluk+item);
-                    }
-                    */
                     ağaç.AltListe.Add(AltAğaç);
                     AğaçDoldur(AltAğaç,altdizi,cevapSütun,"    ");
                 }

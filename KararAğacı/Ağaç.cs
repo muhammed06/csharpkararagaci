@@ -14,5 +14,7 @@ namespace KararAğacı
         public double sdeger = 0.0;
         public List<Ağaç> AltListe=new List<Ağaç>();
 
+
+
     }
 }
